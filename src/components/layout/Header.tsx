@@ -1,12 +1,23 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Search, User, Heart, Plus } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Home, Search, User, Heart, Plus, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, profile, isAdvertiser, signOut, isLoading } = useAuth();
 
   const navLinks = [
     { href: '/', label: 'Início', icon: Home },
@@ -15,6 +26,20 @@ const Header = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass">
@@ -51,18 +76,71 @@ const Header = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/anunciar">
-              <Button variant="outline" size="default" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Anunciar
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button variant="default" size="default" className="gap-2">
-                <User className="w-4 h-4" />
-                Entrar
-              </Button>
-            </Link>
+            {user && isAdvertiser && (
+              <Link to="/anunciar">
+                <Button variant="outline" size="default" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Anunciar
+                </Button>
+              </Link>
+            )}
+            
+            {!isLoading && (
+              user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.full_name} />
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {profile?.full_name ? getInitials(profile.full_name) : <User className="w-4 h-4" />}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex flex-col space-y-1 p-2">
+                      <p className="text-sm font-medium leading-none">{profile?.full_name || 'Usuário'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                      {isAdvertiser && (
+                        <span className="text-xs text-primary font-medium mt-1">
+                          Anunciante
+                        </span>
+                      )}
+                    </div>
+                    <DropdownMenuSeparator />
+                    {isAdvertiser && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/painel" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Meu Painel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/favoritos" className="cursor-pointer">
+                        <Heart className="mr-2 h-4 w-4" />
+                        Favoritos
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="default" size="default" className="gap-2">
+                    <User className="w-4 h-4" />
+                    Entrar
+                  </Button>
+                </Link>
+              )
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -96,22 +174,54 @@ const Header = () => {
                 </Link>
               ))}
               <div className="border-t border-border my-2" />
-              <Link
-                to="/anunciar"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
-              >
-                <Plus className="w-5 h-5" />
-                Anunciar Imóvel
-              </Link>
-              <Link
-                to="/auth"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-primary hover:bg-primary/10"
-              >
-                <User className="w-5 h-5" />
-                Entrar / Cadastrar
-              </Link>
+              
+              {user ? (
+                <>
+                  <div className="px-4 py-3">
+                    <p className="font-medium text-foreground">{profile?.full_name || 'Usuário'}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                  </div>
+                  {isAdvertiser && (
+                    <>
+                      <Link
+                        to="/anunciar"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <Plus className="w-5 h-5" />
+                        Anunciar Imóvel
+                      </Link>
+                      <Link
+                        to="/painel"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <LayoutDashboard className="w-5 h-5" />
+                        Meu Painel
+                      </Link>
+                    </>
+                  )}
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-destructive hover:bg-destructive/10"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/auth"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-primary hover:bg-primary/10"
+                >
+                  <User className="w-5 h-5" />
+                  Entrar / Cadastrar
+                </Link>
+              )}
             </nav>
           </div>
         )}

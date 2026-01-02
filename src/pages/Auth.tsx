@@ -1,19 +1,30 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Home, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Home, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { z } from 'zod';
 
 type AuthMode = 'login' | 'register' | 'register-owner';
 type UserType = 'client' | 'owner';
 
+const emailSchema = z.string().email('Email inválido');
+const passwordSchema = z.string().min(6, 'Senha deve ter pelo menos 6 caracteres');
+const nameSchema = z.string().min(2, 'Nome deve ter pelo menos 2 caracteres');
+const phoneSchema = z.string().min(9, 'Telefone inválido');
+
 const Auth = () => {
+  const navigate = useNavigate();
+  const { user, signIn, signUp, isLoading: authLoading } = useAuth();
+  
   const [mode, setMode] = useState<AuthMode>('login');
   const [userType, setUserType] = useState<UserType>('client');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -23,24 +34,128 @@ const Auth = () => {
     confirmPassword: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (mode !== 'login' && formData.password !== formData.confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate('/');
+    }
+  }, [user, authLoading, navigate]);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    try {
+      emailSchema.parse(formData.email);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        newErrors.email = e.errors[0].message;
+      }
     }
 
-    // Mock authentication
-    toast.success(mode === 'login' ? 'Sessão iniciada!' : 'Conta criada com sucesso!');
+    try {
+      passwordSchema.parse(formData.password);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        newErrors.password = e.errors[0].message;
+      }
+    }
+
+    if (mode !== 'login') {
+      try {
+        nameSchema.parse(formData.name);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.name = e.errors[0].message;
+        }
+      }
+
+      try {
+        phoneSchema.parse(formData.phone);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.phone = e.errors[0].message;
+        }
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'As senhas não coincidem';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      if (mode === 'login') {
+        const { error } = await signIn(formData.email, formData.password);
+        
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast.error('Email ou senha incorretos');
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
+        
+        toast.success('Sessão iniciada com sucesso!');
+        navigate('/');
+      } else {
+        const isAdvertiser = userType === 'owner';
+        const { error } = await signUp(
+          formData.email, 
+          formData.password, 
+          formData.name, 
+          formData.phone, 
+          isAdvertiser
+        );
+        
+        if (error) {
+          if (error.message.includes('already registered')) {
+            toast.error('Este email já está registrado');
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
+        
+        toast.success('Conta criada com sucesso!');
+        navigate('/');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted flex">
@@ -124,10 +239,11 @@ const Auth = () => {
                     placeholder="Seu nome"
                     value={formData.name}
                     onChange={handleChange}
-                    className="pl-10 h-12 rounded-xl"
+                    className={cn("pl-10 h-12 rounded-xl", errors.name && "border-destructive")}
                     required
                   />
                 </div>
+                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
               </div>
             )}
 
@@ -142,10 +258,11 @@ const Auth = () => {
                   placeholder="seu@email.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="pl-10 h-12 rounded-xl"
+                  className={cn("pl-10 h-12 rounded-xl", errors.email && "border-destructive")}
                   required
                 />
               </div>
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
 
             {mode !== 'login' && (
@@ -160,10 +277,11 @@ const Auth = () => {
                     placeholder="+258 84 123 4567"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="pl-10 h-12 rounded-xl"
+                    className={cn("pl-10 h-12 rounded-xl", errors.phone && "border-destructive")}
                     required
                   />
                 </div>
+                {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
               </div>
             )}
 
@@ -178,7 +296,7 @@ const Auth = () => {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className="pl-10 pr-10 h-12 rounded-xl"
+                  className={cn("pl-10 pr-10 h-12 rounded-xl", errors.password && "border-destructive")}
                   required
                 />
                 <button
@@ -189,6 +307,7 @@ const Auth = () => {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
 
             {mode !== 'login' && (
@@ -203,10 +322,11 @@ const Auth = () => {
                     placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="pl-10 h-12 rounded-xl"
+                    className={cn("pl-10 h-12 rounded-xl", errors.confirmPassword && "border-destructive")}
                     required
                   />
                 </div>
+                {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
               </div>
             )}
 
@@ -218,9 +338,21 @@ const Auth = () => {
               </div>
             )}
 
-            <Button type="submit" variant="hero" size="xl" className="w-full gap-2">
-              {mode === 'login' ? 'Entrar' : 'Criar Conta'}
-              <ArrowRight className="w-5 h-5" />
+            <Button 
+              type="submit" 
+              variant="hero" 
+              size="xl" 
+              className="w-full gap-2"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  {mode === 'login' ? 'Entrar' : 'Criar Conta'}
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </Button>
           </form>
 
