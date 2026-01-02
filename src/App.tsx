@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
 import Dashboard from "./pages/Dashboard";
 import CreateProperty from "./pages/CreateProperty";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/painel" element={<Dashboard />} />
             <Route path="/anunciar" element={<CreateProperty />} />
             <Route path="/anunciar/:id" element={<CreateProperty />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
