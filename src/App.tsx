@@ -9,6 +9,8 @@ import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
+import Dashboard from "./pages/Dashboard";
+import CreateProperty from "./pages/CreateProperty";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,9 @@ const App = () => (
             <Route path="/imovel/:id" element={<PropertyDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/favoritos" element={<Favorites />} />
+            <Route path="/painel" element={<Dashboard />} />
+            <Route path="/anunciar" element={<CreateProperty />} />
+            <Route path="/anunciar/:id" element={<CreateProperty />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
