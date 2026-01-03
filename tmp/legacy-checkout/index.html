@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout Seguro - EnsinaPay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;n=f.fbq=function(){
+        n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+      };
+      if(!f._fbq)f._fbq=n;
+      n.push=n; n.loaded=!0; n.version='2.0';
+      n.queue=[]; t=b.createElement(e); t.async=!0;
+      t.src=v; s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1040143497542982');
+    fbq('track', 'PageView');
+  </script>
+  <noscript>
+    <img height="1" width="1" src="https://www.facebook.com/tr?id=1040143497542982&ev=PageView&noscript=1"/>
+  </noscript>
+  <script>
+    (function(u,t,m){
+      var f=u.getElementsByTagName(t)[0],
+          s=u.createElement(t);
+      s.async=1;
+      s.src=m;
+      f.parentNode.insertBefore(s,f);
+    })(document,'script','https://cdn.utmify.com.br/scripts/utmify.min.js');
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f4f4; }
+    .top-bar { background-color: #d90429; color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: bold; }
+    .wrapper { max-width: 420px; background: white; margin: 20px auto; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .secure { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 15px; }
+    .secure span { display: flex; align-items: center; gap: 5px; font-weight: bold; color: #3b3b3b; }
+    .secure img { width: 18px; height: 14px; border-radius: 2px; }
+    .product { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .product img { width: 60px; border-radius: 6px; }
+    .product-details { display: flex; flex-direction: column; }
+    .product-title { font-weight: bold; font-size: 16px; }
+    .product-sub { font-size: 13px; color: #555; }
+    .product-price { color: #0056b3; font-weight: bold; font-size: 18px; }
+    label { font-size: 14px; margin-top: 10px; display: block; font-weight: 500; }
+    input { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+    .method-select { display: flex; gap: 10px; margin-bottom: 15px; }
+    .method-btn { flex: 1; padding: 12px; font-weight: bold; font-size: 14px; border-radius: 6px; border: 2px solid #ccc; background: #fff; color: #333; cursor: pointer; transition: all 0.3s ease; }
+    .method-btn.active { border-color: #d90429; color: #d90429; background-color: #ffe9ec; }
+    .price-box { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; color: #444; margin-top: 10px; }
+    .submit-btn { background-color: #28a745; color: white; font-weight: bold; border: none; width: 100%; padding: 15px; font-size: 16px; border-radius: 6px; margin-top: 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+    .msg { text-align: center; margin-top: 15px; font-size: 14px; font-weight: 500; }
+    .btn-spinner { width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="top-bar">Oferta expira em <span id="contador">00:10:00</span></div>
+<div class="wrapper">
+  <div class="secure">
+    <span>✅ PAGAMENTO 100% SEGURA</span>
+    <span><img src="https://flagcdn.com/w40/mz.png" alt="MZ"> Moçambique</span>
+  </div>
+  <div class="product">
+    <img src="images/minigestor.png" alt="produto">
+    <div class="product-details">
+      <div class="product-title">Assinatura MINIGESTOR</div>
+      <div class="product-sub">EnsinaPay Inc</div>
+      <div class="product-price" id="preco">199,00 MT</div>
+    </div>
+  </div>
+  <label for="nome">Nome completo</label>
+  <input type="text" id="nome" placeholder="Seu nome">
+  <label for="email">Email</label>
+  <input type="email" id="email" placeholder="seu@email.com">
+  <label>Método de pagamento</label>
+  <div class="method-select">
+    <button type="button" class="method-btn active" id="btn-mpesa" onclick="selectMetodo('mpesa')">📱 M-Pesa</button>
+    <button type="button" class="method-btn" id="btn-emola" onclick="selectMetodo('emola')">📲 e-Mola</button>
+  </div>
+  <label for="numero">Número de pagamento</label>
+  <input type="text" id="numero" placeholder="8xxxxxxxxx">
+  <label>Detalhes da compra</label>
+  <div class="price-box">
+    <span>Assinatura MINIGESTOR</span>
+    <span>199,00 MT</span>
+  </div>
+  <button class="submit-btn" id="btn-pagar" onclick="pagar()">
+    <span id="btn-text">Comprar agora</span>
+    <span id="btn-spinner" class="btn-spinner" style="display:none; margin-left:10px;"></span>
+  </button>
+  <div class="msg" id="mensagem"></div>
+</div>
+<script>
+let metodoSelecionado = 'mpesa';
+function selectMetodo(metodo) {
+  metodoSelecionado = metodo;
+  document.getElementById("btn-mpesa").classList.remove("active");
+  document.getElementById("btn-emola").classList.remove("active");
+  document.getElementById("btn-" + metodo).classList.add("active");
+}
+
+async function pagar() {
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const numero = document.getElementById("numero").value.trim();
+  const valorTexto = document.getElementById("preco").textContent.trim();
+  const valor = valorTexto.replace(" MT", "").replace(",", ".");
+  const botao = document.getElementById("btn-pagar");
+  const btnText = document.getElementById("btn-text");
+  const btnSpinner = document.getElementById("btn-spinner");
+
+  if (!nome || !email || !numero) {
+    Swal.fire('Campos obrigatórios!', 'Por favor preencha todos os campos.', 'error');
+    return;
+  }
+
+  const validMpesa = /^8[45]/.test(numero);
+  const validEmola = /^8[67]/.test(numero);
+
+  if ((metodoSelecionado === 'mpesa' && !validMpesa) ||
+      (metodoSelecionado === 'emola' && !validEmola)) {
+    Swal.fire('Número inválido', 'Use número correto para o método selecionado.', 'warning');
+    return;
+  }
+
+  try {
+    botao.disabled = true;
+    btnText.style.display = "none";
+    btnSpinner.style.display = "inline-block";
+
+    const tokenResp = await fetch("https://e2payments.explicador.co.mz/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: "9fa16fb1-6d57-4492-8330-577439e15598",
+        client_secret: "J2b5zbMDzOA3C3mPFVl3qx12jVb3n2qcwDbQDZyA"
+      })
+    });
+
+    const tokenData = await tokenResp.json();
+    const token = tokenData.access_token;
+
+    if (!token) throw new Error("Token inválido");
+
+    const endpoint = metodoSelecionado === 'mpesa'
+      ? 'https://e2payments.explicador.co.mz/v1/c2b/mpesa-payment/999813'
+      : 'https://e2payments.explicador.co.mz/v1/c2b/emola-payment/999814';
+
+    const resposta = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: new URLSearchParams({
+        client_id: "9fa16fb1-6d57-4492-8330-577439e15598",
+        amount: valor,
+        reference: "minigestor",
+        phone: numero
+      })
+    });
+
+    const resultado = await resposta.json();
+    console.log("STATUS HTTP:", resposta.status);
+    console.log("RESPOSTA COMPLETA:", JSON.stringify(resultado, null, 2));
+
+    if (resultado.success && resultado.success.includes("sucesso")) {
+      localStorage.setItem("email", email);
+      localStorage.setItem("telefone", numero);
+
+      try {
+        fbq('track', 'Purchase', {
+          value: parseFloat(valor),
+          currency: 'MZN'
+        });
+      } catch (e) {
+        console.warn("Erro ao disparar fbq:", e);
+      }
+
+      fetch("https://api.pushcut.io/LwrUR20CODgHBOG_HuUOK/notifications/Oferta%20Percevejos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "💰 Venda Realizada!",
+          text: `Cliente: ${nome} - Valor: ${valor} MT`,
+          sound: "default"
+        })
+      });
+
+      fetch("https://api.utmify.com.br/v1/conversao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer OfVfyXd4CySQhlccI4KMH4wLeXybXDxLz42C"
+        },
+        body: JSON.stringify({
+          valor: parseFloat(valor),
+          nome: "radical",
+          email: email,
+          telefone: numero,
+          utm_source: localStorage.getItem("utm_source"),
+          utm_medium: localStorage.getItem("utm_medium"),
+          utm_campaign: localStorage.getItem("utm_campaign"),
+          utm_content: localStorage.getItem("utm_content")
+        })
+      }).finally(() => {
+        window.location.href = "obrigado.html?value=" + valor;
+      });
+    } else {
+      Swal.fire("Pagamento não concluído", "A transação foi cancelada ou falhou.", "warning");
+    }
+
+  } catch (erro) {
+    console.error(erro);
+    Swal.fire("Erro de conexão", "Não foi possível conectar ao servidor.", "error");
+  } finally {
+    botao.disabled = false;
+    btnText.style.display = "inline-block";
+    btnSpinner.style.display = "none";
+  }
+}
+
+let tempo = 10 * 60;
+const contador = document.getElementById("contador");
+setInterval(() => {
+  const minutos = String(Math.floor(tempo / 60)).padStart(2, '0');
+  const segundos = String(tempo % 60).padStart(2, '0');
+  contador.textContent = `00:${minutos}:${segundos}`;
+  if (tempo > 0) tempo--;
+}, 1000);
+</script>
+</body>
+</html>

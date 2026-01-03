@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagamento Confirmado</title>
+
+  <!-- Facebook Pixel -->
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const valor = parseFloat(urlParams.get("value")) || 147.00;
+
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;n=f.fbq=function(){
+        n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+      };
+      if(!f._fbq)f._fbq=n;
+      n.push=n; n.loaded=!0; n.version='2.0';
+      n.queue=[]; t=b.createElement(e); t.async=!0;
+      t.src=v; s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+    fbq('init', '1040143497542982');
+    fbq('track', 'PageView');
+    fbq('track', 'Purchase', {
+      value: valor,
+      currency: 'MZN'
+    });
+
+    fetch("https://api.utmify.com.br/v1/conversao", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer OfVfyXd4CySQhlccI4KMH4wLeXybXDxLz42C"
+      },
+      body: JSON.stringify({
+        valor: valor,
+        nome: "Google Reward",
+        email: localStorage.getItem("email") || "",
+        telefone: localStorage.getItem("telefone") || "",
+        utm_source: localStorage.getItem("utm_source"),
+        utm_medium: localStorage.getItem("utm_medium"),
+        utm_campaign: localStorage.getItem("utm_campaign"),
+        utm_content: localStorage.getItem("utm_content")
+      })
+    });
+  </script>
+  <noscript>
+    <img height="1" width="1" src="https://www.facebook.com/tr?id=1040143497542982&ev=PageView&noscript=1"/>
+  </noscript>
+
+  <!-- UTMify Script -->
+  <script>
+    (function(u,t,m){
+      var f=u.getElementsByTagName(t)[0],
+          s=u.createElement(t);
+      s.async=1;
+      s.src=m;
+      f.parentNode.insertBefore(s,f);
+    })(document,'script','https://cdn.utmify.com.br/scripts/utmify.min.js');
+  </script>
+
+  <style>
+    body {
+      background: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 40px 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #28a745;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    .btn-spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    .submit-btn .btn-spinner {
+      border-color: rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+    }
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #555;
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+    .btn {
+      padding: 12px 20px;
+      background-color: #d90429;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #b40321;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>✅</h1>
+  <h1>Pagamento realizado com sucesso!</h1>
+  <p>Obrigado pela sua assinatura. Seu pedido está sendo processado.</p>
+  <a href="https://wa.link/f1eyw6" class="btn">
+    <span ></span> CLIQUE AQUI PRA ACESSAR
+  </a>
+</div>
+
+</body>
+</html>
