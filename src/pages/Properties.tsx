@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/property/PropertyCard';
 import PropertyFilters, { FilterState } from '@/components/property/PropertyFilters';
-import { mockProperties, Property } from '@/lib/mockData';
-import { Home, Grid3X3, List } from 'lucide-react';
+import { usePublicProperties } from '@/hooks/usePublicProperties';
+import { Home, Grid3X3, List, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -23,18 +23,22 @@ const Properties = () => {
     bedrooms: ''
   });
 
+  const { data: properties, isLoading, error } = usePublicProperties();
+
   // Filter properties based on current filters
   const filteredProperties = useMemo(() => {
-    return mockProperties.filter((property: Property) => {
+    if (!properties) return [];
+    
+    return properties.filter((property) => {
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         const matchesSearch = 
           property.title.toLowerCase().includes(searchLower) ||
-          property.address.toLowerCase().includes(searchLower) ||
+          (property.address?.toLowerCase().includes(searchLower) || false) ||
           property.city.toLowerCase().includes(searchLower) ||
           property.province.toLowerCase().includes(searchLower) ||
-          property.type.toLowerCase().includes(searchLower);
+          property.property_type.toLowerCase().includes(searchLower);
         if (!matchesSearch) return false;
       }
 
@@ -48,9 +52,19 @@ const Properties = () => {
         return false;
       }
 
-      // Type filter
-      if (filters.type && property.type !== filters.type) {
-        return false;
+      // Type filter - map filter values to database values
+      if (filters.type) {
+        const typeMap: Record<string, string> = {
+          casa: 'house',
+          apartamento: 'apartment',
+          estudio: 'studio',
+          vivenda: 'house',
+          quarto: 'room'
+        };
+        const dbType = typeMap[filters.type] || filters.type;
+        if (property.property_type !== dbType) {
+          return false;
+        }
       }
 
       // Price filters
@@ -64,16 +78,17 @@ const Properties = () => {
       // Bedrooms filter
       if (filters.bedrooms) {
         const bedroomCount = parseInt(filters.bedrooms);
+        const propertyBedrooms = property.bedrooms || 0;
         if (bedroomCount === 4) {
-          if (property.bedrooms < 4) return false;
+          if (propertyBedrooms < 4) return false;
         } else {
-          if (property.bedrooms !== bedroomCount) return false;
+          if (propertyBedrooms !== bedroomCount) return false;
         }
       }
 
       return true;
     });
-  }, [filters]);
+  }, [properties, filters]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,7 +108,7 @@ const Properties = () => {
                   Imóveis para Alugar
                 </h1>
                 <p className="text-muted-foreground mt-1">
-                  {filteredProperties.length} imóveis encontrados
+                  {isLoading ? 'Carregando...' : `${filteredProperties.length} imóveis encontrados`}
                 </p>
               </div>
               
@@ -128,8 +143,30 @@ const Properties = () => {
             className="mb-8"
           />
 
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Home className="w-10 h-10 text-destructive" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                Erro ao carregar imóveis
+              </h3>
+              <p className="text-muted-foreground">
+                Por favor, tente novamente mais tarde.
+              </p>
+            </div>
+          )}
+
           {/* Properties Grid */}
-          {filteredProperties.length > 0 ? (
+          {!isLoading && !error && filteredProperties.length > 0 && (
             <div className={cn(
               "grid gap-6",
               viewMode === 'grid' 
@@ -146,7 +183,10 @@ const Properties = () => {
                 </div>
               ))}
             </div>
-          ) : (
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !error && filteredProperties.length === 0 && (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Home className="w-10 h-10 text-muted-foreground" />
