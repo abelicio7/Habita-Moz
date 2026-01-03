@@ -31,7 +31,7 @@ const CTASection = () => {
           </h2>
           
           <p className="text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto">
-            Experimente 21 dias grátis e alcance milhares de potenciais inquilinos 
+            Experimente 14 dias grátis e alcance milhares de potenciais inquilinos 
             em toda Moçambique.
           </p>
 
