@@ -4,7 +4,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockProperties, formatPrice } from '@/lib/mockData';
+import { usePropertyById, getSortedImages, propertyTypeLabels } from '@/hooks/usePublicProperties';
+import { formatPrice } from '@/lib/mockData';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -19,20 +20,30 @@ import {
   Check,
   Eye,
   Calendar,
-  User
+  User,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const PropertyDetail = () => {
   const { id } = useParams();
-  const property = mockProperties.find(p => p.id === id);
+  const { data: property, isLoading, error } = usePropertyById(id);
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showInterestModal, setShowInterestModal] = useState(false);
 
-  if (!property) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Error or not found
+  if (error || !property) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -45,19 +56,22 @@ const PropertyDetail = () => {
     );
   }
 
-  const typeLabels: Record<string, string> = {
-    casa: 'Casa',
-    apartamento: 'Apartamento',
-    estudio: 'Estúdio',
-    vivenda: 'Vivenda'
-  };
+  const images = getSortedImages(property.property_images);
+  const typeLabel = propertyTypeLabels[property.property_type] || property.property_type;
+  const ownerPhone = property.owner_profile?.phone || '';
+  const ownerName = property.owner_profile?.full_name || 'Anunciante';
 
   const handleInterest = () => {
+    if (!ownerPhone) {
+      toast.error('Contacto do proprietário não disponível');
+      return;
+    }
+    
     // Generate WhatsApp message
     const message = encodeURIComponent(
       `Olá! Tenho interesse no imóvel "${property.title}" anunciado no Lar Moçambique.\n\nLink: ${window.location.href}\n\nPor favor, entre em contacto comigo.`
     );
-    const whatsappUrl = `https://wa.me/${property.ownerPhone}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${ownerPhone.replace(/\D/g, '')}?text=${message}`;
     
     // Show success message
     toast.success('Interesse manifestado!', {
@@ -70,13 +84,13 @@ const PropertyDetail = () => {
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === property.images.length - 1 ? 0 : prev + 1
+      prev === images.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === 0 ? property.images.length - 1 : prev - 1
+      prev === 0 ? images.length - 1 : prev - 1
     );
   };
 
@@ -100,13 +114,13 @@ const PropertyDetail = () => {
         <div className="container px-4 mb-8">
           <div className="relative aspect-[16/9] md:aspect-[21/9] rounded-2xl overflow-hidden bg-muted">
             <img
-              src={property.images[currentImageIndex]}
+              src={images[currentImageIndex]}
               alt={property.title}
               className="w-full h-full object-cover"
             />
             
             {/* Image Navigation */}
-            {property.images.length > 1 && (
+            {images.length > 1 && (
               <>
                 <button
                   onClick={prevImage}
@@ -123,7 +137,7 @@ const PropertyDetail = () => {
                 
                 {/* Image Dots */}
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {property.images.map((_, index) => (
+                  {images.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -166,20 +180,20 @@ const PropertyDetail = () => {
             {/* Badges */}
             <div className="absolute top-4 left-4 flex gap-2">
               <Badge className="bg-card/90 backdrop-blur-sm text-foreground">
-                {typeLabels[property.type]}
+                {typeLabel}
               </Badge>
-              {property.contractType === 'adiantado' && (
+              {property.advance_months && property.advance_months > 1 && (
                 <Badge className="bg-secondary/90 backdrop-blur-sm text-secondary-foreground">
-                  3 meses adiantados
+                  {property.advance_months} meses adiantados
                 </Badge>
               )}
             </div>
           </div>
 
           {/* Thumbnail Strip */}
-          {property.images.length > 1 && (
+          {images.length > 1 && (
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-              {property.images.map((image, index) => (
+              {images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
@@ -209,7 +223,11 @@ const PropertyDetail = () => {
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="w-5 h-5 text-primary" />
-                  <span>{property.address}, {property.city}, {property.province}</span>
+                  <span>
+                    {[property.address, property.neighborhood, property.city, property.province]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </span>
                 </div>
               </div>
 
@@ -217,49 +235,53 @@ const PropertyDetail = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 bg-muted rounded-xl text-center">
                   <Bed className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{property.bedrooms}</div>
+                  <div className="text-2xl font-bold">{property.bedrooms || 0}</div>
                   <div className="text-sm text-muted-foreground">Quartos</div>
                 </div>
                 <div className="p-4 bg-muted rounded-xl text-center">
                   <Bath className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{property.bathrooms}</div>
+                  <div className="text-2xl font-bold">{property.bathrooms || 0}</div>
                   <div className="text-sm text-muted-foreground">Casas de Banho</div>
                 </div>
                 <div className="p-4 bg-muted rounded-xl text-center">
                   <Square className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{property.area}</div>
+                  <div className="text-2xl font-bold">{property.area_sqm || '-'}</div>
                   <div className="text-sm text-muted-foreground">m²</div>
                 </div>
                 <div className="p-4 bg-muted rounded-xl text-center">
                   <Eye className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">{property.views}</div>
+                  <div className="text-2xl font-bold">{property.views_count || 0}</div>
                   <div className="text-sm text-muted-foreground">Visualizações</div>
                 </div>
               </div>
 
               {/* Description */}
-              <div>
-                <h2 className="text-xl font-bold text-foreground mb-4">Descrição</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {property.description}
-                </p>
-              </div>
-
-              {/* Features */}
-              <div>
-                <h2 className="text-xl font-bold text-foreground mb-4">Características</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {property.features.map((feature, index) => (
-                    <div 
-                      key={index}
-                      className="flex items-center gap-2 p-3 bg-muted rounded-lg"
-                    >
-                      <Check className="w-5 h-5 text-secondary" />
-                      <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
+              {property.description && (
+                <div>
+                  <h2 className="text-xl font-bold text-foreground mb-4">Descrição</h2>
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {property.description}
+                  </p>
                 </div>
-              </div>
+              )}
+
+              {/* Features / Amenities */}
+              {property.amenities && property.amenities.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold text-foreground mb-4">Características</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {property.amenities.map((amenity, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-2 p-3 bg-muted rounded-lg"
+                      >
+                        <Check className="w-5 h-5 text-secondary" />
+                        <span className="text-sm">{amenity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sidebar - Contact Card */}
@@ -282,7 +304,7 @@ const PropertyDetail = () => {
                     <User className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <div className="font-medium text-foreground">{property.ownerName}</div>
+                    <div className="font-medium text-foreground">{ownerName}</div>
                     <div className="text-sm text-muted-foreground">Anunciante</div>
                   </div>
                 </div>
@@ -290,7 +312,7 @@ const PropertyDetail = () => {
                 {/* Post Date */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  <span>Publicado em {new Date(property.createdAt).toLocaleDateString('pt-MZ')}</span>
+                  <span>Publicado em {new Date(property.created_at).toLocaleDateString('pt-MZ')}</span>
                 </div>
 
                 {/* Interest Button */}
@@ -299,6 +321,7 @@ const PropertyDetail = () => {
                   size="xl" 
                   className="w-full gap-2"
                   onClick={handleInterest}
+                  disabled={!ownerPhone}
                 >
                   <MessageCircle className="w-5 h-5" />
                   Manifestar Interesse
@@ -312,11 +335,7 @@ const PropertyDetail = () => {
                 <div className="pt-4 border-t border-border">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Visualizações</span>
-                    <span className="font-medium">{property.views}</span>
-                  </div>
-                  <div className="flex justify-between text-sm mt-2">
-                    <span className="text-muted-foreground">Interessados</span>
-                    <span className="font-medium">{property.interests}</span>
+                    <span className="font-medium">{property.views_count || 0}</span>
                   </div>
                 </div>
               </div>

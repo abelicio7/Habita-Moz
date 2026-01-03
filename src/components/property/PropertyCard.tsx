@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Heart, MapPin, Bed, Bath, Square, Eye } from 'lucide-react';
-import { Property, formatPrice } from '@/lib/mockData';
+import { PublicProperty, getPrimaryImage, propertyTypeLabels } from '@/hooks/usePublicProperties';
+import { formatPrice } from '@/lib/mockData';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 interface PropertyCardProps {
-  property: Property;
+  property: PublicProperty;
   className?: string;
 }
 
@@ -14,12 +15,8 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const typeLabels: Record<string, string> = {
-    casa: 'Casa',
-    apartamento: 'Apartamento',
-    estudio: 'Estúdio',
-    vivenda: 'Vivenda'
-  };
+  const imageUrl = getPrimaryImage(property.property_images);
+  const typeLabel = propertyTypeLabels[property.property_type] || property.property_type;
 
   return (
     <Link
@@ -32,7 +29,7 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
-          src={property.images[0]}
+          src={imageUrl}
           alt={property.title}
           className={cn(
             "w-full h-full object-cover transition-all duration-500 group-hover:scale-105",
@@ -48,13 +45,8 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
           <div className="flex gap-2 flex-wrap">
             <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm text-foreground font-medium">
-              {typeLabels[property.type]}
+              {typeLabel}
             </Badge>
-            {property.isFeatured && (
-              <Badge className="bg-accent text-accent-foreground font-medium">
-                Destaque
-              </Badge>
-            )}
           </div>
           
           {/* Favorite button */}
@@ -74,11 +66,11 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
           </button>
         </div>
 
-        {/* Contract type badge */}
-        {property.contractType === 'adiantado' && (
+        {/* Advance months badge */}
+        {property.advance_months && property.advance_months > 1 && (
           <div className="absolute bottom-3 left-3">
             <Badge variant="outline" className="bg-secondary/90 backdrop-blur-sm text-secondary-foreground border-0">
-              3 meses adiantados
+              {property.advance_months} meses adiantados
             </Badge>
           </div>
         )}
@@ -86,7 +78,7 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
         {/* Views counter */}
         <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-xs text-card bg-foreground/70 backdrop-blur-sm px-2 py-1 rounded-full">
           <Eye className="w-3.5 h-3.5" />
-          {property.views}
+          {property.views_count || 0}
         </div>
       </div>
 
@@ -115,16 +107,18 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
         <div className="flex items-center gap-4 pt-3 border-t border-border">
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Bed className="w-4 h-4" />
-            <span>{property.bedrooms} quartos</span>
+            <span>{property.bedrooms || 0} quartos</span>
           </div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Bath className="w-4 h-4" />
-            <span>{property.bathrooms} WC</span>
+            <span>{property.bathrooms || 0} WC</span>
           </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Square className="w-4 h-4" />
-            <span>{property.area} m²</span>
-          </div>
+          {property.area_sqm && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Square className="w-4 h-4" />
+              <span>{property.area_sqm} m²</span>
+            </div>
+          )}
         </div>
       </div>
     </Link>

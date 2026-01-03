@@ -1,16 +1,37 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/property/PropertyCard';
 import { Button } from '@/components/ui/button';
-import { mockProperties } from '@/lib/mockData';
-import { Heart, Search, ArrowRight } from 'lucide-react';
+import { usePublicProperties } from '@/hooks/usePublicProperties';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { Heart, Search, ArrowRight, Loader2 } from 'lucide-react';
 
 const Favorites = () => {
-  // Mock: In a real app, this would come from user state/database
-  const [favorites] = useState(mockProperties.slice(0, 2));
-  const hasFavorites = favorites.length > 0;
+  const { user } = useAuth();
+  const { data: allProperties } = usePublicProperties();
+  
+  // Fetch user's favorites
+  const { data: favoriteIds, isLoading } = useQuery({
+    queryKey: ['favorites', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('property_id')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      return data.map(f => f.property_id);
+    },
+    enabled: !!user
+  });
+  
+  // Filter properties to only show favorites
+  const favoriteProperties = allProperties?.filter(p => favoriteIds?.includes(p.id)) || [];
+  const hasFavorites = favoriteProperties.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,15 +49,23 @@ const Favorites = () => {
               Imóveis Salvos
             </h1>
             <p className="text-muted-foreground mt-1">
-              {hasFavorites 
-                ? `${favorites.length} imóveis salvos`
-                : 'Você ainda não salvou nenhum imóvel'}
+              {isLoading 
+                ? 'Carregando...'
+                : hasFavorites 
+                  ? `${favoriteProperties.length} imóveis salvos`
+                  : 'Você ainda não salvou nenhum imóvel'}
             </p>
           </div>
 
-          {hasFavorites ? (
+          {isLoading && (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          )}
+
+          {!isLoading && hasFavorites && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {favorites.map((property, index) => (
+              {favoriteProperties.map((property, index) => (
                 <div 
                   key={property.id}
                   className="animate-fade-in"
@@ -46,7 +75,9 @@ const Favorites = () => {
                 </div>
               ))}
             </div>
-          ) : (
+          )}
+
+          {!isLoading && !hasFavorites && (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-10 h-10 text-muted-foreground" />

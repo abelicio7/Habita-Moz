@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PropertyCard from '@/components/property/PropertyCard';
-import { mockProperties } from '@/lib/mockData';
+import { usePublicProperties } from '@/hooks/usePublicProperties';
 
 const FeaturedProperties = () => {
-  const featuredProperties = mockProperties.filter(p => p.isFeatured).slice(0, 3);
+  const { data: properties, isLoading } = usePublicProperties();
+  
+  // Get first 3 properties as featured
+  const featuredProperties = properties?.slice(0, 3) || [];
 
   return (
     <section className="py-16 md:py-24">
@@ -29,18 +32,39 @@ const FeaturedProperties = () => {
           </Link>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && featuredProperties.length === 0 && (
+          <div className="text-center py-16 bg-muted/50 rounded-2xl">
+            <p className="text-muted-foreground">
+              Ainda não há imóveis disponíveis. Seja o primeiro a anunciar!
+            </p>
+            <Link to="/publicar">
+              <Button className="mt-4">Anunciar Imóvel</Button>
+            </Link>
+          </div>
+        )}
+
         {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredProperties.map((property, index) => (
-            <div 
-              key={property.id}
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <PropertyCard property={property} />
-            </div>
-          ))}
-        </div>
+        {!isLoading && featuredProperties.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredProperties.map((property, index) => (
+              <div 
+                key={property.id}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <PropertyCard property={property} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
