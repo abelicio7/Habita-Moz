@@ -19,6 +19,9 @@ export interface PublicProperty {
   amenities: string[] | null;
   status: 'pending' | 'active' | 'inactive' | 'expired' | null;
   views_count: number | null;
+  is_featured: boolean | null;
+  featured_until: string | null;
+  featured_total_paid: number | null;
   created_at: string;
   updated_at: string;
   property_images: {
@@ -49,6 +52,8 @@ export const usePublicProperties = () => {
           )
         `)
         .eq('status', 'active')
+        .order('is_featured', { ascending: false, nullsFirst: false })
+        .order('featured_total_paid', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;

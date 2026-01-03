@@ -131,7 +131,10 @@ export type Database = {
           city: string
           created_at: string
           description: string | null
+          featured_total_paid: number | null
+          featured_until: string | null
           id: string
+          is_featured: boolean | null
           latitude: number | null
           longitude: number | null
           neighborhood: string | null
@@ -154,7 +157,10 @@ export type Database = {
           city: string
           created_at?: string
           description?: string | null
+          featured_total_paid?: number | null
+          featured_until?: string | null
           id?: string
+          is_featured?: boolean | null
           latitude?: number | null
           longitude?: number | null
           neighborhood?: string | null
@@ -177,7 +183,10 @@ export type Database = {
           city?: string
           created_at?: string
           description?: string | null
+          featured_total_paid?: number | null
+          featured_until?: string | null
           id?: string
+          is_featured?: boolean | null
           latitude?: number | null
           longitude?: number | null
           neighborhood?: string | null
@@ -220,6 +229,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_promotions: {
+        Row: {
+          amount_paid: number
+          created_at: string | null
+          days_purchased: number
+          id: string
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          phone: string | null
+          property_id: string
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          created_at?: string | null
+          days_purchased: number
+          id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          property_id: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string | null
+          days_purchased?: number
+          id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          property_id?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_promotions_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"

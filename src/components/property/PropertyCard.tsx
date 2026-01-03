@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Bed, Bath, Square, Eye } from 'lucide-react';
+import { Heart, MapPin, Bed, Bath, Square, Eye, Star } from 'lucide-react';
 import { PublicProperty, getPrimaryImage, propertyTypeLabels } from '@/hooks/usePublicProperties';
 import { formatPrice } from '@/lib/mockData';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +17,14 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
 
   const imageUrl = getPrimaryImage(property.property_images);
   const typeLabel = propertyTypeLabels[property.property_type] || property.property_type;
+  const isFeatured = property.is_featured && property.featured_until && new Date(property.featured_until) > new Date();
 
   return (
     <Link
       to={`/imovel/${property.id}`}
       className={cn(
         "group block bg-card rounded-2xl overflow-hidden shadow-card property-card",
+        isFeatured && "ring-2 ring-yellow-500/50",
         className
       )}
     >
@@ -44,6 +46,12 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
         {/* Top badges */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
           <div className="flex gap-2 flex-wrap">
+            {isFeatured && (
+              <Badge className="bg-yellow-500 text-yellow-950 hover:bg-yellow-500 font-medium">
+                <Star className="w-3 h-3 mr-1 fill-current" />
+                Destaque
+              </Badge>
+            )}
             <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm text-foreground font-medium">
               {typeLabel}
             </Badge>
