@@ -62,8 +62,16 @@ export default function Plans() {
       return;
     }
 
-    if (!phone || phone.length < 9) {
-      toast.error('Digite um número de telefone válido');
+    const validMpesa = /^8[45]\d{7}$/.test(phone);
+    const validEmola = /^8[67]\d{7}$/.test(phone);
+
+    if (!phone || phone.length !== 9 || !phone.startsWith('8')) {
+      toast.error('Digite um número válido no formato 8XXXXXXXX');
+      return;
+    }
+
+    if ((paymentMethod === 'mpesa' && !validMpesa) || (paymentMethod === 'emola' && !validEmola)) {
+      toast.error(`Número inválido para ${paymentMethod === 'mpesa' ? 'M-Pesa (84/85)' : 'E-Mola (86/87)'}`);
       return;
     }
 
@@ -75,7 +83,8 @@ export default function Plans() {
           userId: user.id,
           planId: selectedPlan,
           amount: selectedPlanData?.price,
-          phone: phone.startsWith('258') ? phone : `258${phone}`,
+          // E2Payments valida telefone com 9 dígitos (ex: 84xxxxxxx), sem +258
+          phone,
           paymentMethod,
         },
       });
