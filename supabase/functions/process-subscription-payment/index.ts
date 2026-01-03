@@ -6,12 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Credenciais E2Payments
-const CLIENT_ID = "1747855017805";
-const API_TOKEN = "bWFpbHRvLmNvbnRhLjAxQGdtYWlsLmNvbTpMb3ZhYmxlQDIwMjU=";
-const MPESA_WALLET = "960840";
-const EMOLA_WALLET = "1016847";
-
 interface PaymentRequest {
   userId: string;
   planId: string;
@@ -38,40 +32,78 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Obter credenciais do ambiente
+    const clientId = Deno.env.get('E2PAYMENTS_CLIENT_ID');
+    const clientSecret = Deno.env.get('E2PAYMENTS_CLIENT_SECRET');
+    const mpesaWalletId = Deno.env.get('E2PAYMENTS_MPESA_WALLET_ID');
+    const emolaWalletId = Deno.env.get('E2PAYMENTS_EMOLA_WALLET_ID');
+
+    if (!clientId || !clientSecret) {
+      console.error('Missing E2Payments credentials');
+      return new Response(
+        JSON.stringify({ success: false, message: 'Configuração de pagamento incompleta' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Passo 1: Obter token OAuth (igual ao código original)
+    console.log('Getting OAuth token...');
+    const tokenResponse = await fetch("https://e2payments.explicador.co.mz/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret
+      })
+    });
+
+    const tokenData = await tokenResponse.json();
+    console.log('Token response:', tokenData);
+
+    if (!tokenData.access_token) {
+      console.error('Failed to get access token:', tokenData);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Erro de autenticação com gateway de pagamento' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = tokenData.access_token;
+
     // Configurar wallet baseado no método de pagamento
-    const wallet = paymentMethod === 'mpesa' ? MPESA_WALLET : EMOLA_WALLET;
-    const endpoint = paymentMethod === 'mpesa' 
-      ? 'https://e2payments.explicador.co.mz/v1/c2b/mpesa-payment/' 
-      : 'https://e2payments.explicador.co.mz/v1/c2b/emola-payment/';
+    const walletId = paymentMethod === 'mpesa' ? mpesaWalletId : emolaWalletId;
+    const endpoint = paymentMethod === 'mpesa'
+      ? `https://e2payments.explicador.co.mz/v1/c2b/mpesa-payment/${walletId}`
+      : `https://e2payments.explicador.co.mz/v1/c2b/emola-payment/${walletId}`;
 
     // Gerar referência única
     const reference = `SUB-${userId.slice(0, 8)}-${Date.now()}`;
 
-    // Preparar payload para E2Payments
-    const paymentPayload = {
-      client_id: CLIENT_ID,
-      amount: amount.toString(),
-      phone: phone,
-      reference: reference,
-      wallet_id: wallet,
-    };
+    console.log('Sending payment request to:', endpoint);
+    console.log('Payment data:', { amount, phone, reference });
 
-    console.log('Sending to E2Payments:', paymentPayload);
-
-    // Chamar API E2Payments
+    // Passo 2: Fazer pagamento (igual ao código original - usando URLSearchParams)
     const paymentResponse = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_TOKEN}`,
+        'Authorization': `Bearer ${token}`,
+        'X-Requested-With': 'XMLHttpRequest'
       },
-      body: JSON.stringify(paymentPayload),
+      body: new URLSearchParams({
+        client_id: clientId,
+        amount: amount.toString(),
+        reference: reference,
+        phone: phone
+      })
     });
 
     const paymentResult = await paymentResponse.json();
-    console.log('E2Payments response:', paymentResult);
+    console.log('Payment response status:', paymentResponse.status);
+    console.log('Payment response:', paymentResult);
 
-    if (paymentResponse.ok && paymentResult.success) {
+    // Verificar sucesso (igual ao código original)
+    if (paymentResult.success && paymentResult.success.includes("sucesso")) {
       // Salvar transação pendente no banco
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -89,17 +121,17 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Pagamento iniciado',
+          message: 'Pagamento iniciado com sucesso!',
           reference: reference,
-          transactionId: paymentResult.transaction_id,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
+      console.log('Payment not successful:', paymentResult);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: paymentResult.message || 'Erro ao processar pagamento',
+          message: paymentResult.error || paymentResult.message || 'Pagamento não concluído',
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
