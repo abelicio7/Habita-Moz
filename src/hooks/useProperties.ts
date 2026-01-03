@@ -21,6 +21,9 @@ export interface PropertyWithImages {
   amenities: string[] | null;
   status: 'pending' | 'active' | 'inactive' | 'expired' | null;
   views_count: number | null;
+  is_featured: boolean | null;
+  featured_until: string | null;
+  featured_total_paid: number | null;
   created_at: string;
   updated_at: string;
   property_images: {
