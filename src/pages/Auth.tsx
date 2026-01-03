@@ -168,8 +168,8 @@ const Auth = () => {
               <Home className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <span className="text-xl font-bold text-foreground">Lar</span>
-              <span className="text-xl font-bold text-gradient-hero"> Moçambique</span>
+              <span className="text-xl font-bold text-foreground">Habita</span>
+              <span className="text-xl font-bold text-gradient-hero"> Moz</span>
             </div>
           </Link>
 
