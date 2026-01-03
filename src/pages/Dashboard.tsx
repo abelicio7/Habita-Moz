@@ -20,6 +20,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePropertyStats, useMyProperties, useRecentInterests } from '@/hooks/useProperties';
 import { formatPrice } from '@/lib/mockData';
 import PropertyListItem from '@/components/dashboard/PropertyListItem';
+import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
+import { TrialExpiredBanner } from '@/components/subscription/TrialExpiredBanner';
+import { TrialBanner } from '@/components/subscription/TrialBanner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -27,6 +30,7 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = usePropertyStats();
   const { data: properties, isLoading: propertiesLoading } = useMyProperties();
   const { data: recentInterests, isLoading: interestsLoading } = useRecentInterests();
+  const { isExpired, isTrialActive, daysRemaining, canAccessPremium } = useSubscriptionStatus();
 
   // Redirect if not logged in or not an advertiser
   useEffect(() => {
@@ -49,13 +53,6 @@ const Dashboard = () => {
 
   if (!user || !isAdvertiser) return null;
 
-  // Calculate trial days remaining
-  const trialEndsAt = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
-  const now = new Date();
-  const trialDaysRemaining = trialEndsAt 
-    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-    : 0;
-  const isTrialActive = trialDaysRemaining > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,23 +78,9 @@ const Dashboard = () => {
             </Link>
           </div>
 
-          {/* Trial Alert */}
-          {isTrialActive && (
-            <div className="mb-6 p-4 rounded-xl bg-ocean/10 border border-ocean/20 flex items-start gap-3">
-              <Clock className="w-5 h-5 text-ocean mt-0.5" />
-              <div>
-                <p className="font-medium text-foreground">
-                  Período de teste: {trialDaysRemaining} dias restantes
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Aproveite todos os recursos gratuitamente. Após o período, escolha um plano para continuar.
-                </p>
-              </div>
-              <Link to="/planos" className="ml-auto">
-                <Button variant="outline" size="sm">Ver Planos</Button>
-              </Link>
-            </div>
-          )}
+          {/* Subscription Banners */}
+          {isExpired && <TrialExpiredBanner />}
+          {isTrialActive && <TrialBanner daysRemaining={daysRemaining} />}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
