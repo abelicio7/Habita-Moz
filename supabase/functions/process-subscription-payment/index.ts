@@ -77,8 +77,8 @@ const handler = async (req: Request): Promise<Response> => {
       ? `https://e2payments.explicador.co.mz/v1/c2b/mpesa-payment/${walletId}`
       : `https://e2payments.explicador.co.mz/v1/c2b/emola-payment/${walletId}`;
 
-    // Gerar referência única
-    const reference = `SUB-${userId.slice(0, 8)}-${Date.now()}`;
+    // Gerar referência simples (igual ao código original que usa apenas "minigestor")
+    const reference = planId === 'annual' ? 'anualmz' : 'mensalmz';
 
     console.log('Sending payment request to:', endpoint);
     console.log('Payment data:', { amount, phone, reference });
