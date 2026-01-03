@@ -13,8 +13,8 @@ const Footer = () => {
                 <Home className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <span className="text-xl font-bold text-background">Lar</span>
-                <span className="text-xl font-bold text-primary"> Moçambique</span>
+                <span className="text-xl font-bold text-background">Habita</span>
+                <span className="text-xl font-bold text-primary"> Moz</span>
               </div>
             </Link>
             <p className="text-background/70 text-sm leading-relaxed">
@@ -101,7 +101,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3 text-background/70">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                <span>info@larmocambique.co.mz</span>
+                <span>info@habitamoz.co.mz</span>
               </li>
             </ul>
           </div>
@@ -109,7 +109,7 @@ const Footer = () => {
 
         <div className="border-t border-background/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-background/50 text-sm">
-            © {new Date().getFullYear()} Lar Moçambique. Todos os direitos reservados.
+            © {new Date().getFullYear()} Habita Moz. Todos os direitos reservados.
           </p>
           <p className="text-background/50 text-sm">
             Feito com ❤️ em Moçambique
