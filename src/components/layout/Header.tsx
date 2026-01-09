@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Search, User, Heart, Plus, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Home, Search, User, Heart, Plus, LogOut, LayoutDashboard, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,7 +17,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, isAdvertiser, signOut, isLoading } = useAuth();
+  const { user, profile, isAdvertiser, isAdmin, signOut, isLoading } = useAuth();
 
   const navLinks = [
     { href: '/', label: 'Início', icon: Home },
@@ -119,6 +119,14 @@ const Header = () => {
                         </Link>
                       </DropdownMenuItem>
                     )}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="cursor-pointer">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Painel Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link to="/favoritos" className="cursor-pointer">
                         <Heart className="mr-2 h-4 w-4" />
@@ -200,6 +208,16 @@ const Header = () => {
                         Meu Painel
                       </Link>
                     </>
+                  )}
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                    >
+                      <Shield className="w-5 h-5" />
+                      Painel Admin
+                    </Link>
                   )}
                   <button
                     onClick={() => {
