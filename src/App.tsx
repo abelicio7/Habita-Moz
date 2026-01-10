@@ -14,6 +14,10 @@ import CreateProperty from "./pages/CreateProperty";
 import Admin from "./pages/Admin";
 import Plans from "./pages/Plans";
 import ThankYou from "./pages/ThankYou";
+import FAQ from "./pages/FAQ";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +41,10 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/planos" element={<Plans />} />
             <Route path="/obrigado" element={<ThankYou />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/termos" element={<Terms />} />
+            <Route path="/privacidade" element={<Privacy />} />
+            <Route path="/contato" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
