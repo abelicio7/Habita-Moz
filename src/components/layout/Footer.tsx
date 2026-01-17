@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Home, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Home, Mail, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -96,12 +96,8 @@ const Footer = () => {
                 <span>Maputo, Moçambique</span>
               </li>
               <li className="flex items-center gap-3 text-background/70">
-                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                <span>+258 84 123 4567</span>
-              </li>
-              <li className="flex items-center gap-3 text-background/70">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                <span>info@habitamoz.co.mz</span>
+                <span>suporte@habitamoz.com</span>
               </li>
             </ul>
           </div>

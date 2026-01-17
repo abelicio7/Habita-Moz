@@ -111,8 +111,8 @@ const Terms = () => {
                 <h2 className="text-xl font-bold text-foreground mb-4">9. Contato</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Para questões sobre estes Termos de Uso, entre em contato através do email 
-                  <a href="mailto:info@habitamoz.co.mz" className="text-primary hover:underline ml-1">
-                    info@habitamoz.co.mz
+                  <a href="mailto:suporte@habitamoz.com" className="text-primary hover:underline ml-1">
+                    suporte@habitamoz.com
                   </a>.
                 </p>
               </section>

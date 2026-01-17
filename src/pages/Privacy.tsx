@@ -139,8 +139,8 @@ const Privacy = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   Para questões sobre esta Política de Privacidade ou sobre seus dados pessoais, 
                   entre em contato através do email 
-                  <a href="mailto:info@habitamoz.co.mz" className="text-primary hover:underline ml-1">
-                    info@habitamoz.co.mz
+                  <a href="mailto:suporte@habitamoz.com" className="text-primary hover:underline ml-1">
+                    suporte@habitamoz.com
                   </a>.
                 </p>
               </section>
