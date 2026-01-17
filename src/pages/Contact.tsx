@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock } from 'lucide-react';
+import { Mail, MapPin, Send, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
-
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -48,25 +47,13 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email',
-      value: 'info@habitamoz.co.mz',
-      href: 'mailto:info@habitamoz.co.mz'
-    },
-    {
-      icon: Phone,
-      title: 'Telefone',
-      value: '+258 84 123 4567',
-      href: 'tel:+258841234567'
+      value: 'suporte@habitamoz.com',
+      href: 'mailto:suporte@habitamoz.com'
     },
     {
       icon: MapPin,
       title: 'Localização',
       value: 'Maputo, Moçambique',
-      href: null
-    },
-    {
-      icon: Clock,
-      title: 'Horário de Atendimento',
-      value: 'Seg - Sex: 8h às 18h',
       href: null
     }
   ];
@@ -116,24 +103,6 @@ const Contact = () => {
                 </Card>
               ))}
 
-              {/* WhatsApp CTA */}
-              <Card className="border-green-500/30 bg-green-500/5">
-                <CardContent className="p-4">
-                  <p className="font-medium text-foreground mb-2">Prefere WhatsApp?</p>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Fale conosco diretamente pelo WhatsApp para uma resposta mais rápida.
-                  </p>
-                  <a
-                    href="https://wa.me/258841234567"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium text-sm"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Abrir WhatsApp
-                  </a>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Contact Form */}
