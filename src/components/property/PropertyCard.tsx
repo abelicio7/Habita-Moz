@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Bed, Bath, Square, Eye, Star } from 'lucide-react';
+import { Heart, MapPin, Bed, Bath, Square, Eye, Star, Loader2 } from 'lucide-react';
 import { PublicProperty, getPrimaryImage, propertyTypeLabels } from '@/hooks/usePublicProperties';
 import { formatPrice } from '@/lib/mockData';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface PropertyCardProps {
   property: PublicProperty;
@@ -12,8 +13,9 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({ property, className }: PropertyCardProps) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite, toggleFavorite, isPending } = useFavorites();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const isPropertyFavorite = isFavorite(property.id);
 
   const imageUrl = getPrimaryImage(property.property_images);
   const typeLabel = propertyTypeLabels[property.property_type] || property.property_type;
@@ -61,16 +63,22 @@ const PropertyCard = ({ property, className }: PropertyCardProps) => {
           <button
             onClick={(e) => {
               e.preventDefault();
-              setIsFavorite(!isFavorite);
+              e.stopPropagation();
+              toggleFavorite(property.id);
             }}
+            disabled={isPending}
             className={cn(
               "w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200",
-              isFavorite
+              isPropertyFavorite
                 ? "bg-primary text-primary-foreground"
                 : "bg-card/90 backdrop-blur-sm text-foreground hover:bg-card"
             )}
           >
-            <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+            {isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Heart className={cn("w-4 h-4", isPropertyFavorite && "fill-current")} />
+            )}
           </button>
         </div>
 
