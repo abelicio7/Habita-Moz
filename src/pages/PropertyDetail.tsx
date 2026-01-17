@@ -25,13 +25,15 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const PropertyDetail = () => {
   const { id } = useParams();
   const { data: property, isLoading, error } = usePropertyById(id);
+  const { isFavorite, toggleFavorite, isPending } = useFavorites();
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const isPropertyFavorite = id ? isFavorite(id) : false;
 
   // Loading state
   if (isLoading) {
@@ -156,15 +158,20 @@ const PropertyDetail = () => {
             {/* Action Buttons */}
             <div className="absolute top-4 right-4 flex gap-2">
               <button
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={() => id && toggleFavorite(id)}
+                disabled={isPending}
                 className={cn(
                   "w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-lg",
-                  isFavorite
+                  isPropertyFavorite
                     ? "bg-primary text-primary-foreground"
                     : "bg-card/90 backdrop-blur-sm text-foreground hover:bg-card"
                 )}
               >
-                <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
+                {isPending ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Heart className={cn("w-5 h-5", isPropertyFavorite && "fill-current")} />
+                )}
               </button>
               <button
                 onClick={() => {
