@@ -27,8 +27,8 @@ const HowItWorks = () => {
   const forOwners = [
     {
       icon: Home,
-      title: 'Anuncie Grátis',
-      description: 'Publique o seu imóvel gratuitamente e alcance milhares de potenciais inquilinos.'
+      title: '14 Dias Grátis',
+      description: 'Experimente a plataforma gratuitamente durante 14 dias e alcance milhares de potenciais inquilinos.'
     },
     {
       icon: Users,
