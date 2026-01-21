@@ -71,7 +71,7 @@ const PropertyDetail = () => {
     
     // Generate WhatsApp message
     const message = encodeURIComponent(
-      `Olá! Tenho interesse no imóvel "${property.title}" anunciado no Lar Moçambique.\n\nLink: ${window.location.href}\n\nPor favor, entre em contacto comigo.`
+      `Olá! Tenho interesse no imóvel "${property.title}" anunciado no Habita Moz.\n\nLink: ${window.location.href}\n\nPor favor, entre em contacto comigo.`
     );
     const whatsappUrl = `https://wa.me/${ownerPhone.replace(/\D/g, '')}?text=${message}`;
     
