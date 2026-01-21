@@ -108,7 +108,6 @@ const Footer = () => {
             © {new Date().getFullYear()} Habita Moz. Todos os direitos reservados.
           </p>
           <p className="text-background/50 text-sm">
-            Feito com ❤️ em Moçambique
           </p>
         </div>
       </div>
