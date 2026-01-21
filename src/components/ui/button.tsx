@@ -15,7 +15,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
         ghost: "hover:bg-muted hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Custom variants for Lar Moçambique
+        // Custom variants for Habita Moz
         hero: "bg-gradient-to-r from-primary via-[hsl(28,85%,60%)] to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
         whatsapp: "bg-[hsl(142,70%,45%)] text-white hover:bg-[hsl(142,70%,40%)] shadow-md hover:shadow-lg",
         ocean: "bg-gradient-to-r from-secondary to-[hsl(178,65%,45%)] text-secondary-foreground hover:opacity-90 shadow-md",
