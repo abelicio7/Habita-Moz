@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Favorites from "./pages/Favorites";
 import Dashboard from "./pages/Dashboard";
 import CreateProperty from "./pages/CreateProperty";
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/imoveis" element={<Properties />} />
             <Route path="/imovel/:id" element={<PropertyDetail />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/esqueci-senha" element={<ForgotPassword />} />
+            <Route path="/redefinir-senha" element={<ResetPassword />} />
             <Route path="/favoritos" element={<Favorites />} />
             <Route path="/painel" element={<Dashboard />} />
             <Route path="/anunciar" element={<CreateProperty />} />
