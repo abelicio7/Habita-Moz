@@ -333,9 +333,9 @@ const Auth = () => {
 
             {mode === 'login' && (
               <div className="flex justify-end">
-                <button type="button" className="text-sm text-primary hover:underline">
+                <Link to="/esqueci-senha" className="text-sm text-primary hover:underline">
                   Esqueceu a senha?
-                </button>
+                </Link>
               </div>
             )}
 
