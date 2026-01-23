@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePropertyById, getSortedImages, propertyTypeLabels } from '@/hooks/usePublicProperties';
 import { formatPrice } from '@/lib/mockData';
+import { formatMozambiquePhone } from '@/lib/utils';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -73,7 +74,7 @@ const PropertyDetail = () => {
     const message = encodeURIComponent(
       `Olá! Tenho interesse no imóvel "${property.title}" anunciado no Habita Moz.\n\nLink: ${window.location.href}\n\nPor favor, entre em contacto comigo.`
     );
-    const whatsappUrl = `https://wa.me/${ownerPhone.replace(/\D/g, '')}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${formatMozambiquePhone(ownerPhone)}?text=${message}`;
     
     // Show success message
     toast.success('Interesse manifestado!', {
