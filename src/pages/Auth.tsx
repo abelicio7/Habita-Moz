@@ -130,10 +130,8 @@ const Auth = () => {
           return;
         }
         
-        toast.success('Verifique seu email para confirmar o cadastro!', {
-          description: 'Enviamos um link de confirmação para ' + formData.email,
-          duration: 8000,
-        });
+        toast.success('Conta criada com sucesso!');
+        navigate('/');
       }
     } finally {
       setIsSubmitting(false);
