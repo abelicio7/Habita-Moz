@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePropertyStats, useMyProperties, useRecentInterests } from '@/hooks/useProperties';
+import { formatMozambiquePhone } from '@/lib/utils';
 import PropertyListItem from '@/components/dashboard/PropertyListItem';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { TrialExpiredBanner } from '@/components/subscription/TrialExpiredBanner';
@@ -236,7 +237,7 @@ const Dashboard = () => {
                                 {interest.property_title}
                               </p>
                               <a 
-                                href={`https://wa.me/${interest.client_phone.replace(/\D/g, '')}`}
+                                href={`https://wa.me/${formatMozambiquePhone(interest.client_phone)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary hover:underline"
